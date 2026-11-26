@@ -1,0 +1,500 @@
+{
+  "name": "Southern Trails Tours - Asistente",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -768,
+        -112
+      ],
+      "id": "27e3236d-56f1-46e7-979c-26d602f67ea2",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "mode": "insert",
+        "memoryKey": {
+          "__rl": true,
+          "value": "southern_trails",
+          "mode": "list"
+        },
+        "clearStore": true
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreInMemory",
+      "typeVersion": 1.4,
+      "position": [
+        -320,
+        -112
+      ],
+      "id": "6728e77e-95c7-4ef7-b589-4052b0d23214",
+      "name": "Simple Vector Store"
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.embeddingsGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        -272,
+        96
+      ],
+      "id": "34781c32-3298-4eda-a366-13ae4d96efd5",
+      "name": "Embeddings Google Gemini"
+    },
+    {
+      "parameters": {
+        "jsonMode": "expressionData",
+        "jsonData": "={{ $json.text }}",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.documentDefaultDataLoader",
+      "typeVersion": 1.1,
+      "position": [
+        -144,
+        144
+      ],
+      "id": "667938c9-9fd6-4051-878c-f5b24f374129",
+      "name": "Default Data Loader"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.5,
+      "position": [
+        -768,
+        320
+      ],
+      "id": "c6cdf5cc-af6a-411f-ba8b-d962b1583c83",
+      "name": "When chat message received"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.chatInput || $json.texto }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "Eres el asistente virtual de Southern Trails Tours, una empresa pequeña de tours culturales y geográficos en Dunedin, Nueva Zelanda. Responde en el idioma del cliente (español o inglés), con un tono amable y breve. Usa solo la información que te entregue la herramienta de búsqueda de la base de conocimiento. No inventes precios, horarios ni tours. Si la información no está en la base, dilo con claridad y ofrece que una persona del equipo lo contactará en horario de atención.\n\nResponde siempre en el formato estructurado indicado.\n- \"respuesta\": el texto para el cliente.\n- \"intencion\": usa exactamente una de estas categorías: saludo, tours, precios, horarios, ubicacion, cancelacion, otra. No inventes otras.\n- \"derivar\": usa true cuando la información pedida no esté en la base, cuando ofrezcas que una persona del equipo contacte al cliente, o cuando el cliente pida hablar con una persona. Usa false solo cuando respondas con información que sí está en la base.\n- \"motivo_derivacion\": cuando derivar sea true, escribe una frase corta con el motivo. Cuando derivar sea false, déjalo vacío.\n\nNo afirmes que el negocio no ofrece un tour o servicio solo porque no aparece en la base. Si preguntan por algo que no está en la base (descuentos, tours privados, precios o fechas de otros destinos), responde que no tienes esa información en este momento y que una persona del equipo los contactará en horario de atención. Si preguntan por otros destinos de Nueva Zelanda o por las Islas Cook, confirma lo que diga la base y deriva para los precios y fechas. No empieces con un saludo salvo que el cliente salude primero.\n\nCuando el cliente pregunte qué tours hay, lista los tres tours con su duración, precio y horario de salida.\nSi la pregunta tiene varias partes, responde todas las que estén en la base. Si alguna parte no está en la base, díselo y marca derivar en true.\n\nCuando derives a una persona, menciona el horario de atención (lunes a sábado de 8:00 a 17:00, hora de Nueva Zelanda) y pide al cliente su nombre y su consulta para que el equipo pueda retomar sin volver a preguntar.\nCuando lo que piden no esté en la base, dilo con claridad y ofrece una alternativa que sí exista en la base, con su precio y horario de salida, por ejemplo el tour más parecido. Nunca ofrezcas algo que no esté en la base. Aun así marca derivar en true.\nCuando el cliente solo salude, responde con un saludo breve y ofrece estas opciones: tours y precios, horarios de salida, punto de encuentro, cancelaciones, o hablar con una persona para reservar. Marca intencion saludo y derivar en false."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -592,
+        320
+      ],
+      "id": "36ad5a41-d0d3-4598-9fdf-12ea22dd90b0",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.2,
+      "position": [
+        -688,
+        528
+      ],
+      "id": "fc3056a1-4c86-4405-bcdd-2da9e5a5fa42",
+      "name": "Google Gemini Chat Model"
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.embeddingsGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        -128,
+        544
+      ],
+      "id": "76906009-65e5-45eb-bbd2-fa2f8350d83e",
+      "name": "Embeddings Google Gemini1"
+    },
+    {
+      "parameters": {
+        "mode": "retrieve-as-tool",
+        "toolDescription": "Información de Southern Trails Tours: horarios, tours, precios, punto de encuentro, idiomas y cancelación.",
+        "memoryKey": {
+          "__rl": true,
+          "value": "southern_trails",
+          "mode": "list",
+          "cachedResultName": "southern_trails"
+        },
+        "topK": 8
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreInMemory",
+      "typeVersion": 1.4,
+      "position": [
+        -224,
+        336
+      ],
+      "id": "e635698a-da3b-4bbb-8b71-fe22472af2c6",
+      "name": "base_tours"
+    },
+    {
+      "parameters": {
+        "jsCode": "const chunks = [\n  \"Horario de atención: lunes a sábado de 8:00 a 17:00 (hora de Nueva Zelanda). Domingo cerrado.\",\n  \"Punto de encuentro: 12 Harbour Street, Dunedin (frente a la oficina). Llegar 10 minutos antes.\",\n  \"Idiomas de los guías: inglés y español.\",\n  \"Tour Heritage Walk (2 horas): caminata por el centro histórico, con edificios patrimoniales y plazas. NZD 45 por persona. Salidas a las 10:00 y a las 14:00.\",\n  \"Tour Coastal Viewpoints (4 horas): recorrido en minibús por miradores de la costa y paisajes geográficos. NZD 95 por persona. Salida a las 9:00.\",\n  \"Tour Museum & Art Half-Day (4 horas): visita guiada a un museo y una galería de arte local. NZD 60 por persona, entradas incluidas. Salida a las 13:00.\",\n  \"Cancelación: gratis hasta 48 horas antes del tour. Después no hay reembolso.\",\n  \"Niños: menores de 12 años pagan la mitad en el Heritage Walk. En los otros tours pagan precio completo.\",\n  \"Otros destinos: además de los tres tours con salida desde Dunedin, Southern Trails Tours organiza tours por otros destinos de Nueva Zelanda y a las Islas Cook bajo consulta. Los precios, fechas y horarios de esos tours los confirma una persona del equipo.\"\n];\nreturn chunks.map(t => ({ json: { text: t } }));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -544,
+        -112
+      ],
+      "id": "ea4a2c43-a964-4c0f-90bf-5b8f601f680d",
+      "name": "Chunks"
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n  \"respuesta\": \"texto para el cliente\",\n  \"intencion\": \"saludo\",\n  \"derivar\": false,\n  \"motivo_derivacion\": \"\"\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        -448,
+        528
+      ],
+      "id": "dedb5d70-38bd-4130-8548-e5c1fab4e96d",
+      "name": "Structured Output Parser"
+    },
+    {
+      "parameters": {
+        "path": "southern-trails",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.2,
+      "position": [
+        336,
+        -64
+      ],
+      "id": "314c6981-c77e-4cf9-8d25-c5a65dca1508",
+      "name": "Webhook"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 4
+          },
+          "conditions": [
+            {
+              "id": "ee20e8ef-7d96-410d-9f13-21105778024f",
+              "leftValue": "={{ $json.query['hub.verify_token'] }}",
+              "rightValue": "YOUR-VERIFY-TOKEN",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.4,
+      "position": [
+        560,
+        -64
+      ],
+      "id": "9c01748b-dd5a-4304-9004-8582ee18a73c",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "={{ $json.query['hub.challenge'] }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        784,
+        -160
+      ],
+      "id": "4d70297d-4fdb-47b5-a9b9-e39ab0fe6b58",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "southern-trails",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.2,
+      "position": [
+        352,
+        128
+      ],
+      "id": "77a45368-1045-4d4f-be99-4d600ee27930",
+      "name": "Webhook1"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 4
+          },
+          "conditions": [
+            {
+              "id": "fcc1d5a8-e0b5-4f7a-8cd2-43ff1363bf7e",
+              "leftValue": "={{ $json.texto }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.4,
+      "position": [
+        800,
+        128
+      ],
+      "id": "ab6fdbca-6609-405c-8977-a69f63e8adbf",
+      "name": "If1"
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "YOUR-PHONE-NUMBER-ID",
+        "recipientPhoneNumber": "={{ $('Edit Fields').first().json.number }}",
+        "textBody": "={{ $json.output.respuesta.replace(/\\\\n/g, \"\\n\") }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1.1,
+      "position": [
+        -240,
+        720
+      ],
+      "id": "601f0371-3d95-4f55-8d36-6d478d4d76f3",
+      "name": "Send message"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "d7e124b2-4892-41f9-8774-59ecbc6e6a37",
+              "name": "texto",
+              "value": "={{ $json.body.entry?.[0]?.changes?.[0]?.value?.messages?.[0]?.text?.body }}",
+              "type": "string"
+            },
+            {
+              "id": "6127e8d5-0d95-494b-add3-b9777c88b1d9",
+              "name": "number",
+              "value": "={{ $json.body.entry?.[0]?.changes?.[0]?.value?.messages?.[0]?.from }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        576,
+        128
+      ],
+      "id": "272cb325-b5f9-441a-91bd-b7c4d98b6c80",
+      "name": "Edit Fields"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Chunks",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings Google Gemini": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Simple Vector Store",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Default Data Loader": {
+      "ai_document": [
+        [
+          {
+            "node": "Simple Vector Store",
+            "type": "ai_document",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings Google Gemini1": {
+      "ai_embedding": [
+        [
+          {
+            "node": "base_tours",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "base_tours": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Chunks": {
+      "main": [
+        [
+          {
+            "node": "Simple Vector Store",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook1": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If1": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Send message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "If1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "nodeGroups": [],
+  "tags": []
+}
